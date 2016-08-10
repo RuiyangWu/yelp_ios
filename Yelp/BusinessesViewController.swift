@@ -8,11 +8,14 @@
 
 import UIKit
 
-class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate {
+class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate {
 
     var businesses: [Business]!
+    var filteredBusinesses: [Business]!
     
     @IBOutlet weak var tableView: UITableView!
+
+    var searchBar =  UISearchBar()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,8 +25,13 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 120
 
+        //let searchBar = UISearchBar()
+        self.navigationItem.titleView = searchBar
+        searchBar.delegate = self
+
         Business.searchWithTerm("Thai", completion: { (businesses: [Business]!, error: NSError!) -> Void in
             self.businesses = businesses
+            self.filteredBusinesses = businesses
             self.tableView.reloadData()
         
             for business in businesses {
@@ -49,15 +57,24 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         // Dispose of any resources that can be recreated.
     }
 
-  func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return businesses?.count ?? 0
-  }
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+      return filteredBusinesses?.count ?? 0
+    }
 
-  func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCellWithIdentifier("BusinessCell", forIndexPath: indexPath) as! BusinessCell
-    cell.business = businesses[indexPath.row]
-    return cell
-  }
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+      let cell = tableView.dequeueReusableCellWithIdentifier("BusinessCell", forIndexPath: indexPath) as! BusinessCell
+      cell.business = filteredBusinesses[indexPath.row]
+      return cell
+    }
+
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+      print("searchBar text changed")
+      filteredBusinesses = searchText.isEmpty ? businesses : businesses!.filter({(business: Business) -> Bool in
+        let allText = business.name ?? ""
+        return allText.rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
+      })
+      tableView.reloadData()
+    }
 
     // MARK: - Navigation
 
@@ -69,9 +86,10 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
 
     func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: [String : AnyObject]) {
-      var categories = filters["categories"] as? [String]
+      let categories = filters["categories"] as? [String]
       Business.searchWithTerm("Restaurants", sort: nil, categories: categories, deals: nil) { (businesses: [Business]!, error: NSError!) -> Void in
         self.businesses = businesses
+        self.filteredBusinesses = businesses
         self.tableView.reloadData()
       }
     }
