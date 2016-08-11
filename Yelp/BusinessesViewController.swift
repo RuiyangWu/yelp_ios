@@ -12,6 +12,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 
     var businesses: [Business]!
     var filteredBusinesses: [Business]!
+    var searchFilters: SearchFilters = SearchFilters()
     
     @IBOutlet weak var tableView: UITableView!
 
@@ -25,10 +26,13 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 120
 
-        //let searchBar = UISearchBar()
+        searchBar.sizeToFit()
         self.navigationItem.titleView = searchBar
         searchBar.delegate = self
 
+        doSearch()
+
+      /*
         Business.searchWithTerm("Thai", completion: { (businesses: [Business]!, error: NSError!) -> Void in
             self.businesses = businesses
             self.filteredBusinesses = businesses
@@ -39,17 +43,23 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
                 print(business.address!)
             }
         })
+ */
 
-/* Example of Yelp search with more search options specified
-        Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) { (businesses: [Business]!, error: NSError!) -> Void in
-            self.businesses = businesses
-            
-            for business in businesses {
-                print(business.name!)
-                print(business.address!)
-            }
+    }
+
+    private func doSearch() {
+      /* Example of Yelp search with more search options specified */
+      //Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) {
+      Business.searchWithTerm("Restaurants", sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals) { (businesses: [Business]!, error: NSError!) -> Void in
+        self.businesses = businesses
+        self.filteredBusinesses = businesses
+        self.tableView.reloadData()
+
+        for business in businesses {
+          print(business.name!)
+          print(business.address!)
         }
-*/
+      }
     }
 
     override func didReceiveMemoryWarning() {
@@ -68,7 +78,6 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
 
     func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
-      print("searchBar text changed")
       filteredBusinesses = searchText.isEmpty ? businesses : businesses!.filter({(business: Business) -> Bool in
         let allText = business.name ?? ""
         return allText.rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
@@ -83,8 +92,17 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
       let navigationController = segue.destinationViewController as! UINavigationController
       let filtersViewController = navigationController.topViewController as! FiltersViewController
       filtersViewController.delegate = self
+
+      /* We don't need to persist form now, so below is not needed. Enable if need to persist filter settings across views */
+      //filtersViewController.searchFilters = searchFilters
     }
 
+  func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: SearchFilters) {
+    self.searchFilters = filters
+    doSearch()
+  }
+
+  /*
     func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: [String : AnyObject]) {
       let categories = filters["categories"] as? [String]
       Business.searchWithTerm("Restaurants", sort: nil, categories: categories, deals: nil) { (businesses: [Business]!, error: NSError!) -> Void in
@@ -93,5 +111,6 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         self.tableView.reloadData()
       }
     }
+ */
 
 }

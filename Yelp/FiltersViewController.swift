@@ -8,8 +8,12 @@
 
 import UIKit
 
+//@objc protocol FiltersViewControllerDelegate {
+//  optional func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: [String:AnyObject])
+//}
+
 @objc protocol FiltersViewControllerDelegate {
-  optional func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: [String:AnyObject])
+  optional func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: SearchFilters)
 }
 
 class FiltersViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwitchCellDelegate {
@@ -19,6 +23,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
 
     var categories: [[String:String]]!
     var switchStates = [Int:Bool]()
+    var searchFilters: SearchFilters!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,7 +49,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
       print("onSearch")
       dismissViewControllerAnimated(true, completion: nil)
 
-      var filters = [String:AnyObject]()
+      let filters = SearchFilters()
 
       var selectedCategories = [String]()
       for (row,isSelected) in switchStates {
@@ -53,7 +58,10 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         }
       }
       if selectedCategories.count > 0 {
-        filters["categories"] = selectedCategories
+        filters.categories = selectedCategories
+      }
+      else {
+        filters.categories = nil
       }
       
       delegate?.filtersViewController?(self, didUpateFilters: filters)
@@ -73,11 +81,11 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
       return cell
     }
 
-  func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
-    let indexPath = tableView.indexPathForCell(switchCell)
-    switchStates[indexPath!.row] = value
-    print("filters view ctrl got switch event")
-  }
+    func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
+      let indexPath = tableView.indexPathForCell(switchCell)
+      switchStates[indexPath!.row] = value
+      print("filters view ctrl got switch event")
+    }
 
     func yelpCategories() -> [[String:String]] {
       return [["name" : "Afghan", "code": "afghani"],
