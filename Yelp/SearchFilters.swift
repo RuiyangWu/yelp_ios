@@ -11,7 +11,9 @@ import UIKit
 class SearchFilters: NSObject {
   var categories: [String]?
   var sort: YelpSortMode?
+  var sortDesc: String?
   var distance: Float?
+  var distanceDesc: String?
   var deals: Bool?
 
   override init() {

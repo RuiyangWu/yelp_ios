@@ -21,6 +21,8 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
 
     var updatedSearchFilters: SearchFilters!
     var switchStates = [Int:Bool]()
+    var distanceCollapsed = true
+    var sortCollapsed = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,6 +69,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
       delegate?.filtersViewController?(self, didUpateFilters: updatedSearchFilters)
     }
 
+    /* Table View Protocols */
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
       return 4
     }
@@ -74,8 +77,20 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
       switch section {
         case 0: return 1
-        case 1: return 5 // TODO: change to number of distance options
-        case 2: return 3 // TODO: change to number of sorting options
+        case 1:
+          if distanceCollapsed {
+            return 1
+          }
+          else {
+            return 5
+          }
+        case 2:
+          if sortCollapsed {
+            return 1
+          }
+          else {
+            return 3 // TODO: change to number of sorting options
+          }
         case 3: return categories.count
         default: return 0
       }
@@ -92,41 +107,112 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-      let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
+
       switch indexPath.section {
         case 0:
+          let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
+          cell.delegate = self
           cell.switchLabel.text = "Offering a Deal"
           cell.onSwitch.on = updatedSearchFilters.deals ?? false
+          return cell
         case 1:
-          switch indexPath.row {
-            case 0: cell.switchLabel.text = "Auto"
-            case 1: cell.switchLabel.text = "0.3 Miles"
-            case 2: cell.switchLabel.text = "1 Miles"
-            case 3: cell.switchLabel.text = "5 Miles"
-            case 4: cell.switchLabel.text = "20 Miles"
-          default: cell.switchLabel.text = ""
+          if distanceCollapsed {
+            let cell = tableView.dequeueReusableCellWithIdentifier("DropDownCell", forIndexPath: indexPath) as! DropDownCell
+            cell.nameLabel.text = updatedSearchFilters.distanceDesc ?? "Auto"
+            return cell
           }
-          cell.onSwitch.on = false // TODO
+          else {
+            let cell = tableView.dequeueReusableCellWithIdentifier("DropItemCell", forIndexPath: indexPath) as! DropItemCell
+            switch indexPath.row {
+              case 0: cell.nameLabel.text = "Auto"
+              case 1: cell.nameLabel.text = "0.3 Miles"
+              case 2: cell.nameLabel.text = "1 Miles"
+              case 3: cell.nameLabel.text = "5 Miles"
+              case 4: cell.nameLabel.text = "20 Miles"
+              default: cell.nameLabel.text = ""
+            }
+            return cell
+          }
         case 2:
-          switch indexPath.row {
-            case 0: cell.switchLabel.text = "Best Match"
-            case 1: cell.switchLabel.text = "Distance"
-            case 2: cell.switchLabel.text = "Highest Rated"
-          default: cell.switchLabel.text = ""
+          if sortCollapsed {
+            let cell = tableView.dequeueReusableCellWithIdentifier("DropDownCell", forIndexPath: indexPath) as! DropDownCell
+            cell.nameLabel.text = updatedSearchFilters.sortDesc ?? "Best Matched"
+            return cell
           }
-          cell.onSwitch.on = false // TODO
+          else {
+            let cell = tableView.dequeueReusableCellWithIdentifier("DropItemCell", forIndexPath: indexPath) as! DropItemCell
+            switch indexPath.row {
+              case 0: cell.nameLabel.text = "Best Matched"
+              case 1: cell.nameLabel.text = "Distance"
+              case 2: cell.nameLabel.text = "Highest Rated"
+              default: cell.nameLabel.text = ""
+            }
+            return cell
+          }
         case 3:
+          let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
+          cell.delegate = self
           cell.switchLabel.text = categories[indexPath.row]["name"]
           cell.onSwitch.on = switchStates[indexPath.row] ?? false
-        default: break
+          return cell
+        default:
+          return tableView.dequeueReusableCellWithIdentifier("BadCell", forIndexPath: indexPath)
       }
 
-      cell.delegate = self
-      return cell
+
     }
 
-    func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+      print("didSelectRowAtIndexPath")
       let METERS_PER_MILE = 1609
+      switch indexPath.section {
+        case 1:
+          if !distanceCollapsed {
+            switch indexPath.row {
+              case 0:
+                updatedSearchFilters.distance = nil
+                updatedSearchFilters.distanceDesc = "Auto"
+              case 1:
+                updatedSearchFilters.distance = 0.3 * Float(METERS_PER_MILE)
+                updatedSearchFilters.distanceDesc = "0.3 Miles"
+              case 2:
+                updatedSearchFilters.distance = 1.0 * Float(METERS_PER_MILE)
+                updatedSearchFilters.distanceDesc = "1 Mile"
+              case 3:
+                updatedSearchFilters.distance = 5.0 * Float(METERS_PER_MILE)
+                updatedSearchFilters.distanceDesc = "5 Miles"
+              case 4:
+                updatedSearchFilters.distance = 20.0 * Float(METERS_PER_MILE)
+                updatedSearchFilters.distanceDesc = "20 Miles"
+              default: break
+            }
+          }
+          distanceCollapsed = !distanceCollapsed
+          tableView.reloadData()
+        case 2:
+          if !sortCollapsed {
+            switch indexPath.row {
+              case 0:
+                updatedSearchFilters.sort = YelpSortMode.BestMatched
+                updatedSearchFilters.sortDesc = "Best Matched"
+              case 1:
+                updatedSearchFilters.sort = YelpSortMode.Distance
+                updatedSearchFilters.sortDesc = "Distance"
+              case 2:
+                updatedSearchFilters.sort = YelpSortMode.HighestRated
+                updatedSearchFilters.sortDesc = "Highest Rated"
+              default: break
+            }
+          }
+          sortCollapsed = !sortCollapsed
+          tableView.reloadData()
+        default: break
+      }
+    }
+
+    /* SwitchCell Protocols */
+    func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
+      print("didChangeValue")
       let indexPath = tableView.indexPathForCell(switchCell)
       if indexPath == nil {
         return
@@ -134,30 +220,6 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
       switch indexPath!.section {
         case 0:
           updatedSearchFilters.deals = value ? true : nil
-        case 1: // TODO
-          if value {
-            switch indexPath!.row {
-              case 0: updatedSearchFilters.distance = nil
-              case 1:updatedSearchFilters.distance = 0.3 * Float(METERS_PER_MILE)
-              case 2:updatedSearchFilters.distance = 1.0 * Float(METERS_PER_MILE)
-              case 3:updatedSearchFilters.distance = 5.0 * Float(METERS_PER_MILE)
-              case 4:updatedSearchFilters.distance = 20.0 * Float(METERS_PER_MILE)
-            default: break
-            }
-          }
-          else {
-            updatedSearchFilters.distance = nil
-        }
-        case 2: // Sort
-          // Update stored value
-          if value {
-            updatedSearchFilters.sort = YelpSortMode(rawValue: indexPath!.row)
-          }
-          else {
-            updatedSearchFilters.sort = nil
-          }
-          // Update display
-          // TODO: probably no need coz will change to use drop down
         case 3:
           switchStates[indexPath!.row] = value
         default: break
