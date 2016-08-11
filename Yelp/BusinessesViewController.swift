@@ -50,14 +50,14 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     private func doSearch() {
       /* Example of Yelp search with more search options specified */
       //Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) {
-      Business.searchWithTerm("Restaurants", sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals) { (businesses: [Business]!, error: NSError!) -> Void in
+      Business.searchWithTerm("Restaurants", distance: searchFilters.distance, sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals) { (businesses: [Business]!, error: NSError!) -> Void in
         self.businesses = businesses
         self.filteredBusinesses = businesses
         self.tableView.reloadData()
 
         for business in businesses {
-          print(business.name!)
-          print(business.address!)
+          //print(business.name!)
+          //print(business.address!)
         }
       }
     }
@@ -97,20 +97,10 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
       //filtersViewController.searchFilters = searchFilters
     }
 
-  func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: SearchFilters) {
-    self.searchFilters = filters
-    doSearch()
-  }
-
-  /*
-    func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: [String : AnyObject]) {
-      let categories = filters["categories"] as? [String]
-      Business.searchWithTerm("Restaurants", sort: nil, categories: categories, deals: nil) { (businesses: [Business]!, error: NSError!) -> Void in
-        self.businesses = businesses
-        self.filteredBusinesses = businesses
-        self.tableView.reloadData()
-      }
+    func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: SearchFilters) {
+      self.searchFilters = filters
+      print("Updated filters to: ", filters.desc())
+      doSearch()
     }
- */
 
 }
