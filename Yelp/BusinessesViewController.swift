@@ -8,7 +8,7 @@
 
 import UIKit
 
-class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate {
+class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate, UIScrollViewDelegate {
 
     var businesses: [Business]!
     var filteredBusinesses: [Business]!
@@ -17,6 +17,11 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     @IBOutlet weak var tableView: UITableView!
 
     var searchBar =  UISearchBar()
+
+    var isMoreDataLoading = false
+    var loadingMoreView:InfiniteScrollActivityView?
+    var offset = 0
+    static let PER_PAGE = 20
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +34,16 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         searchBar.sizeToFit()
         self.navigationItem.titleView = searchBar
         searchBar.delegate = self
+
+        // Set up Infinite Scroll loading indicator
+        let frame = CGRectMake(0, tableView.contentSize.height, tableView.bounds.size.width, InfiniteScrollActivityView.defaultHeight)
+        loadingMoreView = InfiniteScrollActivityView(frame: frame)
+        loadingMoreView!.hidden = true
+        tableView.addSubview(loadingMoreView!)
+
+        var insets = tableView.contentInset;
+        insets.bottom += InfiniteScrollActivityView.defaultHeight;
+        tableView.contentInset = insets
 
         doSearch()
 
@@ -50,15 +65,30 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     private func doSearch() {
       /* Example of Yelp search with more search options specified */
       //Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) {
-      Business.searchWithTerm("Restaurants", distance: searchFilters.distance, sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals) { (businesses: [Business]!, error: NSError!) -> Void in
+      Business.searchWithTerm("Restaurants", distance: searchFilters.distance, sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals, offset: offset) { (businesses: [Business]!, error: NSError!) -> Void in
         self.businesses = businesses
         self.filteredBusinesses = businesses
-        self.tableView.reloadData()
 
+        self.isMoreDataLoading = false
+        self.offset += businesses.count
+        self.loadingMoreView!.stopAnimating()
+
+        self.tableView.reloadData()
+      }
+    }
+
+    private func loadMoreData() {
+      Business.searchWithTerm("Restaurants", distance: searchFilters.distance, sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals, offset: offset) { (businesses: [Business]!, error: NSError!) -> Void in
         for business in businesses {
-          //print(business.name!)
-          //print(business.address!)
+          self.businesses.append(business)
+          self.filteredBusinesses.append(business)
         }
+
+        self.isMoreDataLoading = false
+        self.offset += businesses.count
+        self.loadingMoreView!.stopAnimating()
+
+        self.tableView.reloadData()
       }
     }
 
@@ -85,6 +115,27 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
       tableView.reloadData()
     }
 
+    /* Infinite Scroll */
+    func scrollViewDidScroll(scrollView: UIScrollView) {
+      if !isMoreDataLoading {
+        // Calculate the position of one screen length before the bottom of the results
+        let scrollViewContentHeight = tableView.contentSize.height
+        let scrollOffsetThreshold = scrollViewContentHeight - tableView.bounds.size.height
+
+        // When the user has scrolled past the threshold, start requesting
+        if(scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
+          isMoreDataLoading = true
+
+          // Update position of loadingMoreView, and start loading indicator
+          let frame = CGRectMake(0, tableView.contentSize.height, tableView.bounds.size.width, InfiniteScrollActivityView.defaultHeight)
+          loadingMoreView?.frame = frame
+          loadingMoreView!.startAnimating()
+
+          // ... Code to load more results ...
+          loadMoreData()
+        }
+      }
+    }
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
