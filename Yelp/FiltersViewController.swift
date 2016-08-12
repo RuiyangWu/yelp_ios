@@ -44,12 +44,10 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     @IBAction func onCancel(sender: AnyObject) {
-      print("onCancel")
       dismissViewControllerAnimated(true, completion: nil)
     }
 
     @IBAction func onSearch(sender: AnyObject) {
-      print("onSearch")
       dismissViewControllerAnimated(true, completion: nil)
 
       // Categories

@@ -65,6 +65,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     private func doSearch() {
       /* Example of Yelp search with more search options specified */
       //Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) {
+      offset = 0 // Reset offset
       Business.searchWithTerm("Restaurants", distance: searchFilters.distance, sort: searchFilters.sort, categories: searchFilters.categories, deals: searchFilters.deals, offset: offset) { (businesses: [Business]!, error: NSError!) -> Void in
         self.businesses = businesses
         self.filteredBusinesses = businesses
@@ -140,12 +141,23 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-      let navigationController = segue.destinationViewController as! UINavigationController
-      let filtersViewController = navigationController.topViewController as! FiltersViewController
-      filtersViewController.delegate = self
+      let button = sender as! UIBarButtonItem
+      if button.title == "Filters" {
+        let navigationController = segue.destinationViewController as! UINavigationController
+        let filtersViewController = navigationController.topViewController as! FiltersViewController
+        filtersViewController.delegate = self
 
-      /* We don't need to persist form now, so below is not needed. Enable if need to persist filter settings across views */
-      //filtersViewController.searchFilters = searchFilters
+        /* We don't need to persist form now, so below not needed. Enable if need to persist filter settings across views */
+        //filtersViewController.searchFilters = searchFilters
+      }
+      else if button.title == "Map" {
+        let navigationController = segue.destinationViewController as! UINavigationController
+        let mapViewController = navigationController.topViewController as! MapViewController
+        mapViewController.businesses = self.businesses
+      }
+      else {
+        print("Bad segue button: ", button.title)
+      }
     }
 
     func filtersViewController(filtersViewController: FiltersViewController, didUpateFilters filters: SearchFilters) {

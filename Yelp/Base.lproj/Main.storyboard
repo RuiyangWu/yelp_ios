@@ -130,6 +130,11 @@
                                 <segue destination="NrB-fE-bvR" kind="modal" id="tma-yv-7Oz"/>
                             </connections>
                         </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Map" id="Rkf-At-rZ2">
+                            <connections>
+                                <segue destination="Fy6-HW-YCZ" kind="modal" id="VFt-25-HC3"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="tableView" destination="1wY-Tx-upr" id="U9a-RN-TSw"/>
@@ -138,6 +143,39 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fgb-4b-F1b" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1485" y="338"/>
+        </scene>
+        <!--Map View Controller-->
+        <scene sceneID="qi2-4x-h4A">
+            <objects>
+                <viewController id="cBN-rR-LxD" customClass="MapViewController" customModule="Yelp" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="qOY-Nc-tAW"/>
+                        <viewControllerLayoutGuide type="bottom" id="Gwj-6Y-1uk"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="lWk-e4-K4g">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" mapType="standard" showsUserLocation="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yEj-5v-Xqa">
+                                <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                            </mapView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="cq5-aX-zNA">
+                        <barButtonItem key="leftBarButtonItem" title="Back" id="zEG-3N-vJk">
+                            <connections>
+                                <action selector="onBack:" destination="cBN-rR-LxD" id="ebR-f9-SBj"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="mapView" destination="yEj-5v-Xqa" id="eYN-Y0-0GL"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Rrx-mg-G9q" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2017" y="981"/>
         </scene>
         <!--Filters-->
         <scene sceneID="Atm-Z2-noW">
@@ -294,6 +332,24 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ueH-Le-WhV" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1952" y="338"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="hOp-na-BRe">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Fy6-HW-YCZ" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="KaJ-Uk-bir">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="cBN-rR-LxD" kind="relationship" relationship="rootViewController" id="waZ-So-qO1"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="tLf-bA-SBf" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1485" y="981"/>
         </scene>
     </scenes>
 </document>
